@@ -15,7 +15,7 @@ Add the corresponding plugin under the webpack plugin as shown below.
 ```yaml
 plugins:
   - serverless-webpack
-  - serverless-prisma-plugin
+  - serverless-webpack-prisma
 ```
 
 If you have already used the generate script below, please delete it.
