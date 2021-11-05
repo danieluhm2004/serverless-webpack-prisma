@@ -1,6 +1,6 @@
 'use strict';
-const fs = require('fs');
 const path = require('path');
+const fse = require('fs-extra');
 const childProcess = require('child_process');
 const glob = require('fast-glob');
 
@@ -37,8 +37,12 @@ class ServerlessWebpackPrisma {
 
   onBeforeWebpackPackage() {
     const { servicePath } = this.serverless.config;
+    const prismaDir = path.join(servicePath, 'prisma');
     for (const functionName of this.getFunctions()) {
       const cwd = path.join(servicePath, '.webpack', functionName);
+      const targetPrismaDir = path.join(cwd, 'prisma');
+      this.serverless.cli.log(`Copy prisma schema for ${functionName}...`);
+      fse.copySync(prismaDir, targetPrismaDir);
       this.serverless.cli.log(`Generate prisma client for ${functionName}...`);
       childProcess.execSync('prisma generate', { cwd });
       const unusedEngines = glob.sync(this.engines, { cwd });
@@ -47,7 +51,7 @@ class ServerlessWebpackPrisma {
       unusedEngines.forEach((engine) => {
         this.serverless.cli.log(`- ${engine}`);
         const enginePath = path.join(cwd, engine);
-        fs.rmSync(enginePath, { force: true });
+        fse.rmSync(enginePath, { force: true });
       });
     }
   }
