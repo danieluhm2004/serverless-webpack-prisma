@@ -44,7 +44,7 @@ class ServerlessWebpackPrisma {
       this.serverless.cli.log(`Copy prisma schema for ${functionName}...`);
       fse.copySync(prismaDir, targetPrismaDir);
       this.serverless.cli.log(`Generate prisma client for ${functionName}...`);
-      childProcess.execSync('prisma generate', { cwd });
+      childProcess.execSync('npx prisma generate', { cwd });
       const unusedEngines = glob.sync(this.engines, { cwd });
       if (unusedEngines.length <= 0) continue;
       this.serverless.cli.log(`Remove unused prisma engine: `);
