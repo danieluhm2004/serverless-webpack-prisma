@@ -51,7 +51,7 @@ class ServerlessWebpackPrisma {
       unusedEngines.forEach((engine) => {
         this.serverless.cli.log(`- ${engine}`);
         const enginePath = path.join(cwd, engine);
-        fse.rmSync(enginePath, { force: true });
+        fse.removeSync(enginePath, { force: true });
       });
     }
   }
