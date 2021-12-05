@@ -38,7 +38,9 @@ class ServerlessWebpackPrisma {
   onBeforeWebpackPackage() {
     const { servicePath } = this.serverless.config;
     const prismaDir = path.join(servicePath, 'prisma');
-    for (const functionName of this.getFunctions()) {
+    const packageIndividually = this.serverless.configurationInput.package && this.serverless.configurationInput.package.individually;
+    const functionNames = packageIndividually ? this.getFunctions() : ['service'];
+    for (const functionName of functionNames) {
       const cwd = path.join(servicePath, '.webpack', functionName);
       const targetPrismaDir = path.join(cwd, 'prisma');
       this.serverless.cli.log(`Copy prisma schema for ${functionName}...`);
