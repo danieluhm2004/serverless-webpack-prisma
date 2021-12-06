@@ -38,7 +38,9 @@ class ServerlessWebpackPrisma {
   onBeforeWebpackPackage() {
     const { servicePath } = this.serverless.config;
     const prismaDir = path.join(servicePath, 'prisma');
-    for (const functionName of this.getFunctions()) {
+    const packageIndividually = this.serverless.configurationInput.package && this.serverless.configurationInput.package.individually;
+    const functionNames = packageIndividually ? this.getFunctions() : ['service'];
+    for (const functionName of functionNames) {
       const cwd = path.join(servicePath, '.webpack', functionName);
       const targetPrismaDir = path.join(cwd, 'prisma');
       this.serverless.cli.log(`Copy prisma schema for ${functionName}...`);
@@ -51,7 +53,7 @@ class ServerlessWebpackPrisma {
       unusedEngines.forEach((engine) => {
         this.serverless.cli.log(`- ${engine}`);
         const enginePath = path.join(cwd, engine);
-        fse.rmSync(enginePath, { force: true });
+        fse.removeSync(enginePath, { force: true });
       });
     }
   }
