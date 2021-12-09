@@ -38,12 +38,7 @@ class ServerlessWebpackPrisma {
   onBeforeWebpackPackage() {
     const { servicePath } = this.serverless.config;
     const prismaDir = path.join(servicePath, 'prisma');
-    const packageIndividually =
-      this.serverless.configurationInput.package &&
-      this.serverless.configurationInput.package.individually;
-    const functionNames = packageIndividually
-      ? this.getFunctions()
-      : ['service'];
+    const functionNames = this.getFunctionNamesForProcess();
     for (const functionName of functionNames) {
       const cwd = path.join(servicePath, '.webpack', functionName);
       const targetPrismaDir = path.join(cwd, 'prisma');
@@ -62,8 +57,15 @@ class ServerlessWebpackPrisma {
     }
   }
 
+  getFunctionNamesForProcess() {
+    const packageIndividually =
+      this.serverless.configurationInput.package &&
+      this.serverless.configurationInput.package.individually;
+    return packageIndividually ? this.getAllNodeFunctions() : ['service'];
+  }
+
   // Ref: https://github.com/serverless-heaven/serverless-webpack/blob/4785eb5e5520c0ce909b8270e5338ef49fab678e/lib/utils.js#L115
-  getFunctions() {
+  getAllNodeFunctions() {
     const functions = this.serverless.service.getAllFunctions();
 
     return functions.filter((funcName) => {
