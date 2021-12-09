@@ -22,7 +22,7 @@ class ServerlessWebpackPrisma {
     '!node_modules/@prisma/engines/prisma-fmt-rhel*',
 
     'node_modules/@prisma/engines/introspection-engine*',
-    '!node_modules/@prisma/engines/introsㅁpection-engine-rhel*',
+    '!node_modules/@prisma/engines/introspection-engine-rhel*',
   ];
 
   constructor(serverless, options) {
@@ -38,8 +38,12 @@ class ServerlessWebpackPrisma {
   onBeforeWebpackPackage() {
     const { servicePath } = this.serverless.config;
     const prismaDir = path.join(servicePath, 'prisma');
-    const packageIndividually = this.serverless.configurationInput.package && this.serverless.configurationInput.package.individually;
-    const functionNames = packageIndividually ? this.getFunctions() : ['service'];
+    const packageIndividually =
+      this.serverless.configurationInput.package &&
+      this.serverless.configurationInput.package.individually;
+    const functionNames = packageIndividually
+      ? this.getFunctions()
+      : ['service'];
     for (const functionName of functionNames) {
       const cwd = path.join(servicePath, '.webpack', functionName);
       const targetPrismaDir = path.join(cwd, 'prisma');
@@ -58,7 +62,7 @@ class ServerlessWebpackPrisma {
     }
   }
 
-  // Ref: https://github.com/serverless-heaven/serverless-webpack/blob/4785eb5e5520c0ce909b8270e5338ef49fab678e/lib/utils.js#L115)
+  // Ref: https://github.com/serverless-heaven/serverless-webpack/blob/4785eb5e5520c0ce909b8270e5338ef49fab678e/lib/utils.js#L115
   getFunctions() {
     const functions = this.serverless.service.getAllFunctions();
 
