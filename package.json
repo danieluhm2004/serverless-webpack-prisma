@@ -18,7 +18,10 @@
     "fast-glob": "^3.2.7",
     "fs-extra": "^10.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/jest": "^27.0.3",
+    "jest": "^27.4.5"
+  },
   "peerDependencies": {
     "serverless": "2.x"
   },
