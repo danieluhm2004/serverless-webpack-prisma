@@ -1,4 +1,5 @@
 'use strict';
+
 const path = require('path');
 const fse = require('fs-extra');
 const childProcess = require('child_process');
@@ -41,20 +42,32 @@ class ServerlessWebpackPrisma {
     const functionNames = this.getFunctionNamesForProcess();
     for (const functionName of functionNames) {
       const cwd = path.join(servicePath, '.webpack', functionName);
-      const targetPrismaDir = path.join(cwd, 'prisma');
-      this.serverless.cli.log(`Copy prisma schema for ${functionName}...`);
-      fse.copySync(prismaDir, targetPrismaDir);
-      this.serverless.cli.log(`Generate prisma client for ${functionName}...`);
-      childProcess.execSync('npx prisma generate', { cwd });
-      const unusedEngines = glob.sync(this.engines, { cwd });
-      if (unusedEngines.length <= 0) continue;
-      this.serverless.cli.log(`Remove unused prisma engine: `);
-      unusedEngines.forEach((engine) => {
-        this.serverless.cli.log(`- ${engine}`);
-        const enginePath = path.join(cwd, engine);
-        fse.removeSync(enginePath, { force: true });
-      });
+      this.copyPrismaSchemaToFunction({ functionName, cwd, prismaDir });
+      this.generatePrismaSchema({ functionName, cwd });
+      this.deleteUnusedEngines({ functionName, cwd });
     }
+  }
+
+  copyPrismaSchemaToFunction({ functionName, cwd, prismaDir }) {
+    const targetPrismaDir = path.join(cwd, 'prisma');
+    this.serverless.cli.log(`Copy prisma schema for ${functionName}...`);
+    fse.copySync(prismaDir, targetPrismaDir);
+  }
+
+  generatePrismaSchema({ functionName, cwd }) {
+    this.serverless.cli.log(`Generate prisma client for ${functionName}...`);
+    childProcess.execSync('npx prisma generate', { cwd });
+  }
+
+  deleteUnusedEngines({ cwd }) {
+    const unusedEngines = glob.sync(this.engines, { cwd });
+    if (unusedEngines.length <= 0) return;
+    this.serverless.cli.log(`Remove unused prisma engine:`);
+    unusedEngines.forEach((engine) => {
+      this.serverless.cli.log(`- ${engine}`);
+      const enginePath = path.join(cwd, engine);
+      fse.removeSync(enginePath, { force: true });
+    });
   }
 
   getFunctionNamesForProcess() {
