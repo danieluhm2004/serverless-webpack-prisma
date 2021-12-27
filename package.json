@@ -1,6 +1,6 @@
 {
   "name": "serverless-webpack-prisma",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "repository": "https://github.com/danieluhm2004/serverless-webpack-prisma.git",
   "author": "danieluhm2004 <iam@dan.al>",
   "description": "When using serverless webpack, you can save up to 50% of package capacity by deleting unnecessary Prisma engine.",
@@ -13,13 +13,16 @@
     "prisma",
     "webpack"
   ],
-  "scripts": {},
+  "scripts": {
+    "test": "jest"
+  },
   "dependencies": {
     "fast-glob": "^3.2.7",
     "fs-extra": "^10.0.0"
   },
   "devDependencies": {
     "@types/jest": "^27.0.3",
+    "husky": "^7.0.4",
     "jest": "^27.4.5"
   },
   "peerDependencies": {
