@@ -17,13 +17,12 @@ describe('Check serverless-webpack-prisma plugin', () => {
     plugin = new ServerlessWebpackPrisma({
       cli: { log: console.log },
       configurationInput: { package: { individually: false } },
-      config: {
-        servicePath: '',
-      },
+      config: { servicePath: '' },
       service: {
         provider: {},
         getAllFunctions: () => [],
         getFunction: () => ({}),
+        custom: { webpack: {} },
       },
     });
   });
@@ -32,6 +31,70 @@ describe('Check serverless-webpack-prisma plugin', () => {
     const fromFunction = plugin.onBeforeWebpackPackage.bind(plugin);
     const fromHook = plugin.hooks['after:webpack:package:packExternalModules'];
     expect(fromFunction.toString()).toEqual(fromHook.toString());
+  });
+
+  test('getPackageManager() is "npm"', () =>
+    expect(plugin.getPackageManager()).toEqual('npm'));
+
+  test('getPackageManager() is "yarn"', () => {
+    plugin.serverless.service.custom.webpack = { packager: 'yarn' };
+    expect(plugin.getPackageManager()).toEqual('yarn');
+  });
+
+  test('runPackageInstallCommand() install package by npm', () => {
+    const packageName = `${randomBytes(4).toString('hex')}`;
+    const cwd = `/fake-path/${randomBytes(4).toString('hex')}`;
+    childProcess.execSync.mockImplementation((command, options) => {
+      expect(command).toEqual(`npm install ${packageName}`);
+      expect(options).toEqual({ cwd });
+    });
+
+    plugin.runPackageInstallCommand({ packageName, cwd, dev: false });
+  });
+
+  test('runPackageInstallCommand() install package by yarn', () => {
+    plugin.serverless.service.custom.webpack = { packager: 'yarn' };
+    const packageName = `${randomBytes(4).toString('hex')}`;
+    const cwd = `/fake-path/${randomBytes(4).toString('hex')}`;
+    childProcess.execSync.mockImplementation((command, options) => {
+      expect(command).toEqual(`yarn add ${packageName}`);
+      expect(options).toEqual({ cwd });
+    });
+
+    plugin.runPackageInstallCommand({ packageName, cwd, dev: false });
+  });
+
+  test('runPackageInstallCommand() install package by npm (with devDependencies)', () => {
+    const packageName = `${randomBytes(4).toString('hex')}`;
+    const cwd = `/fake-path/${randomBytes(4).toString('hex')}`;
+    childProcess.execSync.mockImplementation((command, options) => {
+      expect(command).toEqual(`npm install -D ${packageName}`);
+      expect(options).toEqual({ cwd });
+    });
+
+    plugin.runPackageInstallCommand({ packageName, cwd, dev: true });
+  });
+
+  test('runPackageInstallCommand() install package by yarn (with devDependencies)', () => {
+    plugin.serverless.service.custom.webpack = { packager: 'yarn' };
+    const packageName = `${randomBytes(4).toString('hex')}`;
+    const cwd = `/fake-path/${randomBytes(4).toString('hex')}`;
+    childProcess.execSync.mockImplementation((command, options) => {
+      expect(command).toEqual(`yarn add -D ${packageName}`);
+      expect(options).toEqual({ cwd });
+    });
+
+    plugin.runPackageInstallCommand({ packageName, cwd, dev: true });
+  });
+
+  test('installPrismaPackage() install prisma devDeprendencies', () => {
+    const cwd = `/fake-path/${randomBytes(4).toString('hex')}`;
+    childProcess.execSync.mockImplementation((command, options) => {
+      expect(command).toEqual(`npm install -D prisma`);
+      expect(options).toEqual({ cwd });
+    });
+
+    plugin.installPrismaPackage({ cwd });
   });
 
   test('copyPrismaSchemaToFunction must copy prisma schema', () => {

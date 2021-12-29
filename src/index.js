@@ -1,8 +1,8 @@
 'use strict';
 
-const path = require('path');
-const fse = require('fs-extra');
 const childProcess = require('child_process');
+const { join } = require('path');
+const fse = require('fs-extra');
 const glob = require('fast-glob');
 
 class ServerlessWebpackPrisma {
@@ -38,18 +38,52 @@ class ServerlessWebpackPrisma {
 
   onBeforeWebpackPackage() {
     const { servicePath } = this.serverless.config;
-    const prismaDir = path.join(servicePath, 'prisma');
+    const prismaDir = join(servicePath, 'prisma');
     const functionNames = this.getFunctionNamesForProcess();
     for (const functionName of functionNames) {
-      const cwd = path.join(servicePath, '.webpack', functionName);
+      const cwd = join(servicePath, '.webpack', functionName);
+      this.installPrismaPackage({ cwd });
       this.copyPrismaSchemaToFunction({ functionName, cwd, prismaDir });
       this.generatePrismaSchema({ functionName, cwd });
       this.deleteUnusedEngines({ functionName, cwd });
+      this.removePrismaPackage({ cwd });
     }
   }
 
+  getPackageManager() {
+    return this.serverless.service?.custom?.webpack?.packager || 'npm';
+  }
+
+  runPackageInstallCommand({ packageName, cwd, dev }) {
+    let params = '';
+    if (dev) params += '-D ';
+    const command =
+      this.getPackageManager() === 'npm'
+        ? `npm install ${params}${packageName}`
+        : `yarn add ${params}${packageName}`;
+    childProcess.execSync(command, { cwd });
+  }
+
+  runPackageRemoveCommand({ packageName, cwd }) {
+    const command =
+      this.getPackageManager() === 'npm'
+        ? `npm remove ${packageName}`
+        : `yarn remove ${packageName}`;
+    childProcess.execSync(command, { cwd });
+  }
+
+  installPrismaPackage({ cwd }) {
+    this.serverless.cli.log('Install prisma devDependencies for generate');
+    this.runPackageInstallCommand({ packageName: 'prisma', cwd, dev: true });
+  }
+
+  removePrismaPackage({ cwd }) {
+    this.serverless.cli.log('Remove prisma devDependencies');
+    this.runPackageRemoveCommand({ packageName: 'prisma', cwd });
+  }
+
   copyPrismaSchemaToFunction({ functionName, cwd, prismaDir }) {
-    const targetPrismaDir = path.join(cwd, 'prisma');
+    const targetPrismaDir = join(cwd, 'prisma');
     this.serverless.cli.log(`Copy prisma schema for ${functionName}...`);
     fse.copySync(prismaDir, targetPrismaDir);
   }
@@ -65,7 +99,7 @@ class ServerlessWebpackPrisma {
     this.serverless.cli.log(`Remove unused prisma engine:`);
     unusedEngines.forEach((engine) => {
       this.serverless.cli.log(`- ${engine}`);
-      const enginePath = path.join(cwd, engine);
+      const enginePath = join(cwd, engine);
       fse.removeSync(enginePath, { force: true });
     });
   }
