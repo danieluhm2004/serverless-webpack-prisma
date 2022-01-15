@@ -51,7 +51,12 @@ class ServerlessWebpackPrisma {
   }
 
   getPackageManager() {
-    return this.serverless.service?.custom?.webpack?.packager || 'npm';
+    const packagerFromConfig =
+      this.serverless.service &&
+      this.serverless.service.custom &&
+      this.serverless.service.custom.webpack &&
+      this.serverless.service.custom.webpack.packager;
+    return packagerFromConfig || 'npm';
   }
 
   runPackageInstallCommand({ packageName, cwd, dev }) {
