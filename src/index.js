@@ -37,16 +37,16 @@ class ServerlessWebpackPrisma {
   }
 
   onBeforeWebpackPackage() {
-    const { servicePath } = this.serverless.config;
+    const servicePath = this.getSchemaPath();
     const prismaDir = join(servicePath, 'prisma');
     const functionNames = this.getFunctionNamesForProcess();
     for (const functionName of functionNames) {
       const cwd = join(servicePath, '.webpack', functionName);
-      this.installPrismaPackage({ cwd });
+      if (this.getDepsParam()) this.installPrismaPackage({ cwd });
       this.copyPrismaSchemaToFunction({ functionName, cwd, prismaDir });
       this.generatePrismaSchema({ functionName, cwd });
       this.deleteUnusedEngines({ functionName, cwd });
-      this.removePrismaPackage({ cwd });
+      if (this.getDepsParam()) this.removePrismaPackage({ cwd });
     }
   }
 
@@ -114,6 +114,24 @@ class ServerlessWebpackPrisma {
       this.serverless.configurationInput.package &&
       this.serverless.configurationInput.package.individually;
     return packageIndividually ? this.getAllNodeFunctions() : ['service'];
+  }
+
+  getSchemaPath() {
+    const path =
+        this.serverless.service &&
+        this.serverless.service.custom &&
+        this.serverless.service.custom.prisma &&
+        this.serverless.service.custom.prisma.prismaPath;
+    return path !== undefined ? path : this.serverless.config.servicePath;
+  }
+
+  getDepsParam() {
+    const depsInstall =
+        this.serverless.service &&
+        this.serverless.service.custom &&
+        this.serverless.service.custom.prisma &&
+        this.serverless.service.custom.prisma.installDeps;
+    return depsInstall !== undefined ? depsInstall : true;
   }
 
   // Ref: https://github.com/serverless-heaven/serverless-webpack/blob/4785eb5e5520c0ce909b8270e5338ef49fab678e/lib/utils.js#L115
