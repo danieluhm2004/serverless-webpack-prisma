@@ -22,7 +22,7 @@ describe('Check serverless-webpack-prisma plugin', () => {
         provider: {},
         getAllFunctions: () => [],
         getFunction: () => ({}),
-        custom: { webpack: {} },
+        custom: { webpack: {}, prisma: { installDeps: true, prismaPath: '' } },
       },
     });
   });
@@ -35,6 +35,22 @@ describe('Check serverless-webpack-prisma plugin', () => {
 
   test('getPackageManager() is "npm"', () =>
     expect(plugin.getPackageManager()).toEqual('npm'));
+
+  test('getSchemaPath() is "root"', () =>
+    expect(plugin.getSchemaPath()).toEqual(''));
+
+  test('getSchemaPath() is "../../prisma"', () => {
+    plugin.serverless.service.custom.prisma = { prismaPath: '../../prisma' };
+    expect(plugin.getSchemaPath()).toEqual('../../prisma');
+  });
+
+  test('getDepsParam() is default true', () =>
+      expect(plugin.getDepsParam()).toEqual(true));
+
+  test('getDepsParam() is false"', () => {
+    plugin.serverless.service.custom.prisma = { installDeps: true };
+    expect(plugin.getDepsParam()).toEqual(true);
+  });
 
   test('getPackageManager() is "yarn"', () => {
     plugin.serverless.service.custom.webpack = { packager: 'yarn' };

@@ -1,6 +1,6 @@
 # Serverless Webpack Prisma
 
-When using serverless webpack, you can save up to 50% of package capacity by deleting unnecessary Prisma engine.
+When using serverless webpack, you can save up to 50% of package capacity by deleting unnecessary Prisma engines.
 
 ## How to use?
 
@@ -28,7 +28,16 @@ custom:
         - prisma generate
 ```
 
-Congratulations. Setup is complete. In the future, packaging will automatically delete unnecessary resources.
+This plugin also has some additional configs:
+
+```yaml
+custom:
+  prisma:
+    installDeps: false # Passing false will not install Prisma dependency during the build process. Default: true
+    prismaPath: ../../ # Passing this param, plugin will change the directory to find the dir prisma containing the prisma/prisma.schema
+```
+
+Congratulations. The setup is complete. In the future, packaging will automatically delete unnecessary resources.
 
 ```
 Serverless: Generate prisma client for app...
