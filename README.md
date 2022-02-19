@@ -28,6 +28,15 @@ custom:
         - prisma generate
 ```
 
+This plugin also have some aditional configs:
+
+```yaml
+custom:
+  prisma:
+    installDeps: false #Passing false will not install prisma dependenci during the build process. Default true
+    prismaPath: ../../ #Passing this param, plugin will change the directory to find the dir prisma containig the prisma/prismna.schema
+```
+
 Congratulations. Setup is complete. In the future, packaging will automatically delete unnecessary resources.
 
 ```
