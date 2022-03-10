@@ -4,6 +4,7 @@ const childProcess = require('child_process');
 const { join } = require('path');
 const fse = require('fs-extra');
 const glob = require('fast-glob');
+const _ = require('lodash');
 
 class ServerlessWebpackPrisma {
   engines = [
@@ -51,12 +52,7 @@ class ServerlessWebpackPrisma {
   }
 
   getPackageManager() {
-    const packagerFromConfig =
-      this.serverless.service &&
-      this.serverless.service.custom &&
-      this.serverless.service.custom.webpack &&
-      this.serverless.service.custom.webpack.packager;
-    return packagerFromConfig || 'npm';
+    return _.get(this.serverless, 'service.custom.webpack.packager', 'npm');
   }
 
   runPackageInstallCommand({ packageName, cwd, dev }) {
@@ -103,7 +99,7 @@ class ServerlessWebpackPrisma {
     if (unusedEngines.length <= 0) return;
     this.serverless.cli.log(`Remove unused prisma engine:`);
     unusedEngines.forEach((engine) => {
-      this.serverless.cli.log(`- ${engine}`);
+      this.serverless.cli.log(`  - ${engine}`);
       const enginePath = join(cwd, engine);
       fse.removeSync(enginePath, { force: true });
     });
@@ -117,21 +113,15 @@ class ServerlessWebpackPrisma {
   }
 
   getSchemaPath() {
-    const path =
-        this.serverless.service &&
-        this.serverless.service.custom &&
-        this.serverless.service.custom.prisma &&
-        this.serverless.service.custom.prisma.prismaPath;
-    return path !== undefined ? path : this.serverless.config.servicePath;
+    return _.get(
+      this.serverless,
+      'service.custom.prisma.prismaPath',
+      this.serverless.config.servicePath
+    );
   }
 
   getDepsParam() {
-    const depsInstall =
-        this.serverless.service &&
-        this.serverless.service.custom &&
-        this.serverless.service.custom.prisma &&
-        this.serverless.service.custom.prisma.installDeps;
-    return depsInstall !== undefined ? depsInstall : true;
+    return _.get(this.serverless, 'service.custom.prisma.installDeps', true);
   }
 
   // Ref: https://github.com/serverless-heaven/serverless-webpack/blob/4785eb5e5520c0ce909b8270e5338ef49fab678e/lib/utils.js#L115
