@@ -25,6 +25,8 @@ class ServerlessWebpackPrisma {
 
     'node_modules/@prisma/engines/introspection-engine*',
     '!node_modules/@prisma/engines/introspection-engine-rhel*',
+
+    'node_modules/prisma/engines/**',
   ];
 
   constructor(serverless, options) {
