@@ -91,7 +91,7 @@ class ServerlessWebpackPrisma {
 
   generatePrismaSchema({ functionName, cwd }) {
     this.serverless.cli.log(`Generate prisma client for ${functionName}...`);
-    childProcess.execSync('npx prisma generate', { cwd });
+    childProcess.execSync(`npx prisma generate ${this.getDataProxyParam() ? "--data-proxy" : null}`, { cwd });
   }
 
   deleteUnusedEngines({ cwd }) {
@@ -122,6 +122,10 @@ class ServerlessWebpackPrisma {
 
   getDepsParam() {
     return _.get(this.serverless, 'service.custom.prisma.installDeps', true);
+  }
+
+  getDataProxyParam() {
+    return _.get(this.serverless, 'service.custom.prisma.dataProxy', false)
   }
 
   // Ref: https://github.com/serverless-heaven/serverless-webpack/blob/4785eb5e5520c0ce909b8270e5338ef49fab678e/lib/utils.js#L115
