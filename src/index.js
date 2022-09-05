@@ -89,12 +89,19 @@ class ServerlessWebpackPrisma {
     fse.copySync(prismaDir, targetPrismaDir);
   }
 
+  generateCommand() {
+    let command = 'npx prisma generate';
+    if (this.isDataProxyParam()) {
+      this.serverless.cli.log(`Prisma data proxy is enabled.`);
+      command += ' --data-proxy';
+    }
+
+    return command;
+  }
+
   generatePrismaSchema({ functionName, cwd }) {
     this.serverless.cli.log(`Generate prisma client for ${functionName}...`);
-    childProcess.execSync(
-      `npx prisma generate${this.getDataProxyParam() ? ' --data-proxy' : ''}`,
-      { cwd }
-    );
+    childProcess.execSync(this.generateCommand(), { cwd });
   }
 
   deleteUnusedEngines({ cwd }) {
@@ -127,7 +134,7 @@ class ServerlessWebpackPrisma {
     return _.get(this.serverless, 'service.custom.prisma.installDeps', true);
   }
 
-  getDataProxyParam() {
+  isDataProxyParam() {
     return _.get(this.serverless, 'service.custom.prisma.dataProxy', false);
   }
 
