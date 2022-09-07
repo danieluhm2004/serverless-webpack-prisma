@@ -45,7 +45,7 @@ describe('Check serverless-webpack-prisma plugin', () => {
   });
 
   test('getDepsParam() is default true', () =>
-      expect(plugin.getDepsParam()).toEqual(true));
+    expect(plugin.getDepsParam()).toEqual(true));
 
   test('getDepsParam() is false"', () => {
     plugin.serverless.service.custom.prisma = { installDeps: true };
@@ -123,6 +123,17 @@ describe('Check serverless-webpack-prisma plugin', () => {
     });
 
     expect(plugin.copyPrismaSchemaToFunction({ functionName, cwd, prismaDir }));
+  });
+
+  test('generateCommand must generate a command without arguments', () => {
+    expect(plugin.generateCommand()).toEqual('npx prisma generate');
+  });
+
+  test('generateCommand must generate a command with data proxy arguments', () => {
+    plugin.serverless.service.custom.prisma = { dataProxy: true };
+    expect(plugin.generateCommand()).toEqual(
+      'npx prisma generate --data-proxy'
+    );
   });
 
   test('generatePrismaSchema must generate engines', () => {
