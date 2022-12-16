@@ -37,7 +37,7 @@ custom:
     prismaPath: ../../ # Passing this param, plugin will change the directory to find the dir prisma containing the prisma/prisma.schema
     dataProxy: false # Passing this param, plugin will create the prisma client for use with a data proxy see: https://www.prisma.io/docs/data-platform/data-proxy
   webpack:
-    webpackOutputPath: './' # Passing this param, plugin will change the directory to find the dir .webpack
+    webpackOutputPath: ./ # Passing this param, plugin will change the directory to find the dir .webpack
 ```
 
 Congratulations. The setup is complete. In the future, packaging will automatically delete unnecessary resources.
