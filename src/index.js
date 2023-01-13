@@ -38,11 +38,15 @@ class ServerlessWebpackPrisma {
   }
 
   onBeforeWebpackPackage() {
-    const servicePath = this.getSchemaPath();
-    const prismaDir = join(servicePath, 'prisma');
+    const prismaPath = this.getPrismaPath();
+    const webpackOutputPath = this.getWebpackOutputPath();
+    const prismaDir = join(prismaPath, 'prisma');
+    const webpackOutputDir = webpackOutputPath
+      ? join(webpackOutputPath, '.webpack')
+      : join(prismaPath, '.webpack');
     const functionNames = this.getFunctionNamesForProcess();
     for (const functionName of functionNames) {
-      const cwd = join(servicePath, '.webpack', functionName);
+      const cwd = join(webpackOutputDir, functionName);
       if (this.getDepsParam()) this.installPrismaPackage({ cwd });
       this.copyPrismaSchemaToFunction({ functionName, cwd, prismaDir });
       this.generatePrismaSchema({ functionName, cwd });
@@ -122,10 +126,18 @@ class ServerlessWebpackPrisma {
     return packageIndividually ? this.getAllNodeFunctions() : ['service'];
   }
 
-  getSchemaPath() {
+  getPrismaPath() {
     return _.get(
       this.serverless,
       'service.custom.prisma.prismaPath',
+      this.serverless.config.servicePath
+    );
+  }
+
+  getWebpackOutputPath() {
+    return _.get(
+      this.serverless,
+      'service.custom.webpack.webpackOutputPath',
       this.serverless.config.servicePath
     );
   }

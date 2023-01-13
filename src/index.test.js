@@ -36,12 +36,20 @@ describe('Check serverless-webpack-prisma plugin', () => {
   test('getPackageManager() is "npm"', () =>
     expect(plugin.getPackageManager()).toEqual('npm'));
 
-  test('getSchemaPath() is "root"', () =>
-    expect(plugin.getSchemaPath()).toEqual(''));
+  test('getPrismaPath() is "root"', () =>
+    expect(plugin.getPrismaPath()).toEqual(''));
 
-  test('getSchemaPath() is "../../prisma"', () => {
+  test('getPrismaPath() is "../../prisma"', () => {
     plugin.serverless.service.custom.prisma = { prismaPath: '../../prisma' };
-    expect(plugin.getSchemaPath()).toEqual('../../prisma');
+    expect(plugin.getPrismaPath()).toEqual('../../prisma');
+  });
+
+  test('getWebpackOutputPath() is "root"', () =>
+    expect(plugin.getWebpackOutputPath()).toEqual(''));
+
+  test('getWebpackOutputPath() is "../../"', () => {
+    plugin.serverless.service.custom.webpack = { webpackOutputPath: '../../' };
+    expect(plugin.getWebpackOutputPath()).toEqual('../../');
   });
 
   test('getDepsParam() is default true', () =>
