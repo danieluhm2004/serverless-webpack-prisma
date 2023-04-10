@@ -1,7 +1,7 @@
 'use strict';
 
 const childProcess = require('child_process');
-const { join } = require('path');
+const { join, relative, isAbsolute } = require('path');
 const fse = require('fs-extra');
 const glob = require('fast-glob');
 const _ = require('lodash');
@@ -48,7 +48,7 @@ class ServerlessWebpackPrisma {
     for (const functionName of functionNames) {
       const cwd = join(webpackOutputDir, functionName);
       if (this.getDepsParam()) this.installPrismaPackage({ cwd });
-      this.copyPrismaSchemaToFunction({ functionName, cwd, prismaDir });
+      this.attachPrismaSchemaToFunction({ functionName, cwd, prismaDir });
       this.generatePrismaSchema({ functionName, cwd });
       this.deleteUnusedEngines({ functionName, cwd });
       if (this.getDepsParam()) this.removePrismaPackage({ cwd });
@@ -85,6 +85,22 @@ class ServerlessWebpackPrisma {
   removePrismaPackage({ cwd }) {
     this.serverless.cli.log('Remove prisma devDependencies');
     this.runPackageRemoveCommand({ packageName: 'prisma', cwd });
+  }
+
+  attachPrismaSchemaToFunction (attributes) {
+    if (this.useSymLinkForPrismaSchemaParam()) {
+      this.symLinkPrismaSchemaToFunction(attributes);
+    } else {
+      this.copyPrismaSchemaToFunction(attributes);
+    }
+  }
+
+  symLinkPrismaSchemaToFunction ({ functionName, cwd, prismaDir, processCwd=process.cwd() }) {
+    const targetPrismaDir = join(cwd, 'prisma');
+    const sourcePrismaDir = isAbsolute(prismaDir) ? prismaDir : join(processCwd, prismaDir);
+    const relativePath = relative(cwd, sourcePrismaDir);
+    this.serverless.cli.log(`Sym linking prisma schema for ${functionName}...`);
+    childProcess.execSync(`ln -s ${relativePath} prisma`, { cwd });
   }
 
   copyPrismaSchemaToFunction({ functionName, cwd, prismaDir }) {
@@ -134,6 +150,14 @@ class ServerlessWebpackPrisma {
     );
   }
 
+  getIgnoredFunctionNames () {
+    return _.get(
+      this.serverless,
+      'service.custom.prisma.ignoreFunctions',
+      []
+    );
+  }
+
   getWebpackOutputPath() {
     return _.get(
       this.serverless,
@@ -150,11 +174,18 @@ class ServerlessWebpackPrisma {
     return _.get(this.serverless, 'service.custom.prisma.dataProxy', false);
   }
 
+  useSymLinkForPrismaSchemaParam () {
+    return _.get(this.serverless, 'service.custom.prisma.useSymLinkForPrisma', false);
+  }
+
   // Ref: https://github.com/serverless-heaven/serverless-webpack/blob/4785eb5e5520c0ce909b8270e5338ef49fab678e/lib/utils.js#L115
   getAllNodeFunctions() {
     const functions = this.serverless.service.getAllFunctions();
 
     return functions.filter((funcName) => {
+      if (this.getIgnoredFunctionNames().includes(funcName)) {
+        return false;
+      }
       const func = this.serverless.service.getFunction(funcName);
 
       // if `uri` is provided or simple remote image path, it means the

@@ -36,6 +36,9 @@ custom:
     installDeps: false # Passing false will not install Prisma dependency during the build process. Default: true
     prismaPath: ../../ # Passing this param, plugin will change the directory to find the dir prisma containing the prisma/prisma.schema
     dataProxy: false # Passing this param, plugin will create the prisma client for use with a data proxy see: https://www.prisma.io/docs/data-platform/data-proxy
+    useSymLinkForPrisma: true # Passing this param, plugin will symlink prisma dir instead of copying.
+    ignoreFunctions: # Passing this param, we tell plugin which functions should be ignored and processed as non prisma based functions.
+      - someNonPrismaFunction
   webpack:
     webpackOutputPath: ./ # Passing this param, plugin will change the directory to find the dir .webpack
 ```
