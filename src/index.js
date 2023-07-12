@@ -6,7 +6,7 @@ const fse = require('fs-extra');
 const glob = require('fast-glob');
 const _ = require('lodash');
 
-class ServerlessWebpackPrisma {
+class ServerlessWebpackPrismaFork {
   engines = [
     'node_modules/.prisma/client/libquery_engine*',
     '!node_modules/.prisma/client/libquery_engine-rhel*',
@@ -210,4 +210,4 @@ class ServerlessWebpackPrisma {
   }
 }
 
-module.exports = ServerlessWebpackPrisma;
+module.exports = ServerlessWebpackPrismaFork;
