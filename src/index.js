@@ -59,11 +59,15 @@ class ServerlessWebpackPrismaFork {
     return _.get(this.serverless, 'service.custom.webpack.packager', 'npm');
   }
 
+  getPrismaVerisonParam () {
+    return _.get(this.serverless, 'service.custom.prisma.version', "");
+  }
+
   runPackageInstallCommand({ packageName, cwd, dev }) {
     let params = '';
-    let version = _.get(this.serverless, 'service.custom.prisma.version', "");
+    let version = this.getPrismaVerisonParam();
     if (dev) params += '-D ';
-    if (version) version = `@${service.custom.prisma.version}`; 
+    if (version) version = `@${version}`; 
     const command =
       this.getPackageManager() === 'npm'
         ? `npm install ${params}${packageName}${_.get(this.serverless, 'service.custom.prisma.version', "")}`
