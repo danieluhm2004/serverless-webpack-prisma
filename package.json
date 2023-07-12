@@ -1,6 +1,6 @@
 {
   "name": "serverless-webpack-prisma-fork",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "repository": "https://github.com/enviromike/serverless-webpack-prisma.git",
   "author": "michael.oconnor@envirosparkenergy.com",
   "description": "When using serverless webpack, you can save up to 50% of package capacity by deleting unnecessary Prisma engine.",
