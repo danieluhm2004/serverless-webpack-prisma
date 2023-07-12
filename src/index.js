@@ -61,12 +61,12 @@ class ServerlessWebpackPrisma {
 
   runPackageInstallCommand({ packageName, cwd, dev }) {
     let params = '';
-    let version = '';
+    let version = _.get(this.serverless, 'service.custom.prisma.version', "");
     if (dev) params += '-D ';
-    if (service.custom.prisma.version) version = `@${service.custom.prisma.version}`; 
+    if (version) version = `@${service.custom.prisma.version}`; 
     const command =
       this.getPackageManager() === 'npm'
-        ? `npm install ${params}${packageName}${version}`
+        ? `npm install ${params}${packageName}${_.get(this.serverless, 'service.custom.prisma.version', "")}`
         : `yarn add ${params}${packageName}`;
     childProcess.execSync(command, { cwd });
   }
