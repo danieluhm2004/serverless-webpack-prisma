@@ -23,6 +23,9 @@ class ServerlessWebpackPrisma {
     'node_modules/@prisma/engines/schema-engine*',
     '!node_modules/@prisma/engines/schema-engine-rhel*',
 
+    'node_modules/prisma/node_modules/@prisma/engines/schema-engine*',
+    '!node_modules/prisma/node_modules/@prisma/engines/schema-engine-rhel*',
+
     'node_modules/prisma/engines/schema-engine*',
     '!node_modules/prisma/engines/schema-engine-rhel*',
 
