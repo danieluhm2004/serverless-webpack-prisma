@@ -20,6 +20,12 @@ class ServerlessWebpackPrisma {
     'node_modules/@prisma/engines/migration-engine*',
     '!node_modules/@prisma/engines/migration-engine-rhel*',
 
+    'node_modules/@prisma/engines/schema-engine*',
+    '!node_modules/@prisma/engines/schema-engine-rhel*',
+
+    'node_modules/prisma/engines/schema-engine*',
+    '!node_modules/prisma/engines/schema-engine-rhel*',
+
     'node_modules/@prisma/engines/prisma-fmt*',
     '!node_modules/@prisma/engines/prisma-fmt-rhel*',
 
