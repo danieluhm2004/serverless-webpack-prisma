@@ -39,6 +39,7 @@ custom:
     useSymLinkForPrisma: true # Passing this param, plugin will symlink prisma dir instead of copying.
     ignoreFunctions: # Passing this param, we tell plugin which functions should be ignored and processed as non prisma based functions.
       - someNonPrismaFunction
+    version: "5.0.0" # Passing this param, we teel plugin which version of prisma to install: Default: "" 
   webpack:
     webpackOutputPath: ./ # Passing this param, plugin will change the directory to find the dir .webpack
 ```
