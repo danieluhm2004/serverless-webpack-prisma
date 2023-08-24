@@ -36,6 +36,14 @@ describe('Check serverless-webpack-prisma plugin', () => {
   test('getPackageManager() is "npm"', () =>
     expect(plugin.getPackageManager()).toEqual('npm'));
 
+  test('getArchitecture() is "x86_64"', () =>
+    expect(plugin.getArchitecture()).toEqual('x86_64'));
+
+  test('getArchitecture() is "arm64"', () => {
+    plugin.serverless.service.provider.architecture = 'arm64';
+    expect(plugin.getArchitecture()).toEqual('arm64');
+  });
+
   test('getPrismaPath() is "root"', () =>
     expect(plugin.getPrismaPath()).toEqual(''));
 
@@ -64,7 +72,7 @@ describe('Check serverless-webpack-prisma plugin', () => {
     expect(plugin.useSymLinkForPrismaSchemaParam()).toEqual(false));
 
   test('useSymLinkForPrismaSchemaParam() is true', () => {
-    plugin.serverless.service.custom.prisma.useSymLinkForPrisma = true
+    plugin.serverless.service.custom.prisma.useSymLinkForPrisma = true;
     expect(plugin.useSymLinkForPrismaSchemaParam()).toEqual(true);
   });
 
@@ -72,7 +80,7 @@ describe('Check serverless-webpack-prisma plugin', () => {
     expect(plugin.getIgnoredFunctionNames()).toEqual([]));
 
   test('getIgnoredFunctionNames() is ["bag"]', () => {
-    plugin.serverless.service.custom.prisma.ignoreFunctions = ['bag']
+    plugin.serverless.service.custom.prisma.ignoreFunctions = ['bag'];
     expect(plugin.getIgnoredFunctionNames()).toEqual(['bag']);
   });
 
@@ -146,20 +154,27 @@ describe('Check serverless-webpack-prisma plugin', () => {
       expect(dest).toEqual(join(cwd, 'prisma'));
     });
     expect(plugin.copyPrismaSchemaToFunction({ functionName, cwd, prismaDir }));
-    expect.assertions(2)
+    expect.assertions(2);
   });
 
   test('symLinkPrismaSchemaToFunction must sym link prisma schema', () => {
     const functionName = 'this-is-copy-prisma-schema-to-function-test';
     const cwd = `/fake-path/.webpack/${randomBytes(4).toString('hex')}`;
-    const processCwd = `/fake-path/`
+    const processCwd = `/fake-path/`;
     const prismaDir = `./prisma`;
-    plugin.serverless.service.custom.prisma.useSymLinkForPrisma = true
+    plugin.serverless.service.custom.prisma.useSymLinkForPrisma = true;
     childProcess.execSync.mockImplementation((command, options) => {
       expect(command).toEqual(`ln -s ../../prisma prisma`);
       expect(options).toEqual({ cwd });
     });
-    expect(plugin.symLinkPrismaSchemaToFunction({ functionName, cwd, prismaDir, processCwd }));
+    expect(
+      plugin.symLinkPrismaSchemaToFunction({
+        functionName,
+        cwd,
+        prismaDir,
+        processCwd,
+      })
+    );
     expect.assertions(2);
   });
 
@@ -244,4 +259,18 @@ describe('Check serverless-webpack-prisma plugin', () => {
 
   test('isNodeRuntime("python") is false', () =>
     expect(!!plugin.isNodeRuntime('python')).toEqual(false));
+
+  test('engines prefix is "rhel"', () => {
+    plugin.serverless.service.provider.architecture = 'x86_64';
+    expect(plugin.getEngines()[1]).toEqual(
+      '!node_modules/.prisma/client/libquery_engine-rhel*'
+    );
+  });
+
+  test('engines prefix is "linux-arm64"', () => {
+    plugin.serverless.service.provider.architecture = 'arm64';
+    expect(plugin.getEngines()[1]).toEqual(
+      '!node_modules/.prisma/client/libquery_engine-linux-arm64*'
+    );
+  });
 });
