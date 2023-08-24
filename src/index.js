@@ -6,13 +6,8 @@ const fse = require('fs-extra');
 const glob = require('fast-glob');
 const _ = require('lodash');
 
-const archPrefix = {
-  arm64: "linux-arm64",
-  x86_64: "rhel"
-}
-
 class ServerlessWebpackPrisma {
-  constructor(serverless, options) { 
+  constructor(serverless, options) {
     this.serverless = serverless;
     this.options = options;
     this.commands = {};
@@ -20,29 +15,41 @@ class ServerlessWebpackPrisma {
       'after:webpack:package:packExternalModules':
         this.onBeforeWebpackPackage.bind(this),
     };
-    
+  }
+
+  getArchitectures() {
+    return { arm64: 'linux-arm64', x86_64: 'rhel' };
   }
 
   getEngines() {
-    const prefix = archPrefix[this.getArchitecture()];
+    const prefix = this.getArchitectures()[this.getArchitecture()];
     return [
       'node_modules/.prisma/client/libquery_engine*',
       `!node_modules/.prisma/client/libquery_engine-${prefix}*`,
-  
+
       'node_modules/prisma/libquery_engine*',
       `!node_modules/prisma/libquery_engine-${prefix}*`,
-  
+
       'node_modules/@prisma/engines/libquery_engine*',
       `!node_modules/@prisma/engines/libquery_engine-${prefix}*`,
-  
+
       'node_modules/@prisma/engines/migration-engine*',
       `!node_modules/@prisma/engines/migration-engine-${prefix}*`,
-  
+
       'node_modules/@prisma/engines/prisma-fmt*',
       `!node_modules/@prisma/engines/prisma-fmt-${prefix}*`,
-  
+
       'node_modules/@prisma/engines/introspection-engine*',
       `!node_modules/@prisma/engines/introspection-engine-${prefix}*`,
+
+      'node_modules/@prisma/engines/schema-engine*',
+      `!node_modules/@prisma/engines/schema-engine-${prefix}*`,
+
+      'node_modules/prisma/node_modules/@prisma/engines/schema-engine*',
+      `!node_modules/prisma/node_modules/@prisma/engines/schema-engine-${prefix}*`,
+
+      'node_modules/prisma/engines/schema-engine*',
+      `!node_modules/prisma/engines/schema-engine-${prefix}*`,
     ];
   }
 
