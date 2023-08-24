@@ -8,7 +8,7 @@
   "license": "MIT",
   "keywords": [
     "serverless",
-    "serverless-webpack-fork",
+    "serverless-webpack",
     "lambda",
     "prisma",
     "webpack"

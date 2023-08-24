@@ -240,4 +240,4 @@ class ServerlessWebpackPrisma {
   }
 }
 
-module.exports = ServerlessWebpackPrismaFork;
+module.exports = ServerlessWebpackPrisma;
