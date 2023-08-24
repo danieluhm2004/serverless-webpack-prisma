@@ -39,6 +39,11 @@ describe('Check serverless-webpack-prisma plugin', () => {
   test('getArchitecture() is "x86_64"', () =>
     expect(plugin.getArchitecture()).toEqual('x86_64'));
 
+  test('getArchitecture() is "arm64"', () => {
+    plugin.serverless.service.provider.architecture = 'arm64';
+    expect(plugin.getArchitecture()).toEqual('arm64');
+  });
+
   test('getPrismaPath() is "root"', () =>
     expect(plugin.getPrismaPath()).toEqual(''));
 
@@ -82,11 +87,6 @@ describe('Check serverless-webpack-prisma plugin', () => {
   test('getPackageManager() is "yarn"', () => {
     plugin.serverless.service.custom.webpack = { packager: 'yarn' };
     expect(plugin.getPackageManager()).toEqual('yarn');
-  });
-
-  test('getArchitecture() is "arm64"', () => {
-    plugin.serverless.service.provider.architecture = 'arm64';
-    expect(plugin.getArchitecture()).toEqual('arm64');
   });
 
   test('runPackageInstallCommand() install package by npm', () => {
@@ -260,10 +260,12 @@ describe('Check serverless-webpack-prisma plugin', () => {
   test('isNodeRuntime("python") is false', () =>
     expect(!!plugin.isNodeRuntime('python')).toEqual(false));
 
-  test('engines prefix is "rhel"', () =>
+  test('engines prefix is "rhel"', () => {
+    plugin.serverless.service.provider.architecture = 'x86_64';
     expect(plugin.getEngines()[1]).toEqual(
       '!node_modules/.prisma/client/libquery_engine-rhel*'
-    ));
+    );
+  });
 
   test('engines prefix is "linux-arm64"', () => {
     plugin.serverless.service.provider.architecture = 'arm64';
