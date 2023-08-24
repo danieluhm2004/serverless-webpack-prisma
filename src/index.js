@@ -7,35 +7,6 @@ const glob = require('fast-glob');
 const _ = require('lodash');
 
 class ServerlessWebpackPrisma {
-  engines = [
-    'node_modules/.prisma/client/libquery_engine*',
-    '!node_modules/.prisma/client/libquery_engine-rhel*',
-
-    'node_modules/prisma/libquery_engine*',
-    '!node_modules/prisma/libquery_engine-rhel*',
-
-    'node_modules/@prisma/engines/libquery_engine*',
-    '!node_modules/@prisma/engines/libquery_engine-rhel*',
-
-    'node_modules/@prisma/engines/migration-engine*',
-    '!node_modules/@prisma/engines/migration-engine-rhel*',
-
-    'node_modules/@prisma/engines/schema-engine*',
-    '!node_modules/@prisma/engines/schema-engine-rhel*',
-
-    'node_modules/prisma/node_modules/@prisma/engines/schema-engine*',
-    '!node_modules/prisma/node_modules/@prisma/engines/schema-engine-rhel*',
-
-    'node_modules/prisma/engines/schema-engine*',
-    '!node_modules/prisma/engines/schema-engine-rhel*',
-
-    'node_modules/@prisma/engines/prisma-fmt*',
-    '!node_modules/@prisma/engines/prisma-fmt-rhel*',
-
-    'node_modules/@prisma/engines/introspection-engine*',
-    '!node_modules/@prisma/engines/introspection-engine-rhel*',
-  ];
-
   constructor(serverless, options) {
     this.serverless = serverless;
     this.options = options;
@@ -44,6 +15,42 @@ class ServerlessWebpackPrisma {
       'after:webpack:package:packExternalModules':
         this.onBeforeWebpackPackage.bind(this),
     };
+  }
+
+  getArchitectures() {
+    return { arm64: 'linux-arm64', x86_64: 'rhel' };
+  }
+
+  getEngines() {
+    const prefix = this.getArchitectures()[this.getArchitecture()];
+    return [
+      'node_modules/.prisma/client/libquery_engine*',
+      `!node_modules/.prisma/client/libquery_engine-${prefix}*`,
+
+      'node_modules/prisma/libquery_engine*',
+      `!node_modules/prisma/libquery_engine-${prefix}*`,
+
+      'node_modules/@prisma/engines/libquery_engine*',
+      `!node_modules/@prisma/engines/libquery_engine-${prefix}*`,
+
+      'node_modules/@prisma/engines/migration-engine*',
+      `!node_modules/@prisma/engines/migration-engine-${prefix}*`,
+
+      'node_modules/@prisma/engines/prisma-fmt*',
+      `!node_modules/@prisma/engines/prisma-fmt-${prefix}*`,
+
+      'node_modules/@prisma/engines/introspection-engine*',
+      `!node_modules/@prisma/engines/introspection-engine-${prefix}*`,
+
+      'node_modules/@prisma/engines/schema-engine*',
+      `!node_modules/@prisma/engines/schema-engine-${prefix}*`,
+
+      'node_modules/prisma/node_modules/@prisma/engines/schema-engine*',
+      `!node_modules/prisma/node_modules/@prisma/engines/schema-engine-${prefix}*`,
+
+      'node_modules/prisma/engines/schema-engine*',
+      `!node_modules/prisma/engines/schema-engine-${prefix}*`,
+    ];
   }
 
   onBeforeWebpackPackage() {
@@ -62,6 +69,10 @@ class ServerlessWebpackPrisma {
       this.deleteUnusedEngines({ functionName, cwd });
       if (this.getDepsParam()) this.removePrismaPackage({ cwd });
     }
+  }
+
+  getArchitecture() {
+    return _.get(this.serverless, 'service.provider.architecture', 'x86_64');
   }
 
   getPackageManager() {
@@ -96,7 +107,7 @@ class ServerlessWebpackPrisma {
     this.runPackageRemoveCommand({ packageName: 'prisma', cwd });
   }
 
-  attachPrismaSchemaToFunction (attributes) {
+  attachPrismaSchemaToFunction(attributes) {
     if (this.useSymLinkForPrismaSchemaParam()) {
       this.symLinkPrismaSchemaToFunction(attributes);
     } else {
@@ -104,9 +115,16 @@ class ServerlessWebpackPrisma {
     }
   }
 
-  symLinkPrismaSchemaToFunction ({ functionName, cwd, prismaDir, processCwd=process.cwd() }) {
+  symLinkPrismaSchemaToFunction({
+    functionName,
+    cwd,
+    prismaDir,
+    processCwd = process.cwd(),
+  }) {
     const targetPrismaDir = join(cwd, 'prisma');
-    const sourcePrismaDir = isAbsolute(prismaDir) ? prismaDir : join(processCwd, prismaDir);
+    const sourcePrismaDir = isAbsolute(prismaDir)
+      ? prismaDir
+      : join(processCwd, prismaDir);
     const relativePath = relative(cwd, sourcePrismaDir);
     this.serverless.cli.log(`Sym linking prisma schema for ${functionName}...`);
     childProcess.execSync(`ln -s ${relativePath} prisma`, { cwd });
@@ -134,7 +152,7 @@ class ServerlessWebpackPrisma {
   }
 
   deleteUnusedEngines({ cwd }) {
-    const unusedEngines = glob.sync(this.engines, { cwd });
+    const unusedEngines = glob.sync(this.getEngines(), { cwd });
     if (unusedEngines.length <= 0) return;
     this.serverless.cli.log(`Remove unused prisma engine:`);
     unusedEngines.forEach((engine) => {
@@ -159,12 +177,8 @@ class ServerlessWebpackPrisma {
     );
   }
 
-  getIgnoredFunctionNames () {
-    return _.get(
-      this.serverless,
-      'service.custom.prisma.ignoreFunctions',
-      []
-    );
+  getIgnoredFunctionNames() {
+    return _.get(this.serverless, 'service.custom.prisma.ignoreFunctions', []);
   }
 
   getWebpackOutputPath() {
@@ -183,8 +197,12 @@ class ServerlessWebpackPrisma {
     return _.get(this.serverless, 'service.custom.prisma.dataProxy', false);
   }
 
-  useSymLinkForPrismaSchemaParam () {
-    return _.get(this.serverless, 'service.custom.prisma.useSymLinkForPrisma', false);
+  useSymLinkForPrismaSchemaParam() {
+    return _.get(
+      this.serverless,
+      'service.custom.prisma.useSymLinkForPrisma',
+      false
+    );
   }
 
   // Ref: https://github.com/serverless-heaven/serverless-webpack/blob/4785eb5e5520c0ce909b8270e5338ef49fab678e/lib/utils.js#L115
